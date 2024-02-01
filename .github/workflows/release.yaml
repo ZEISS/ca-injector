@@ -45,7 +45,7 @@ jobs:
           #   TAGS="$TAGS,${REGISTRY}${IMAGE}:sha-${GITHUB_SHA::8}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "name=tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
       - name: Set up GO
