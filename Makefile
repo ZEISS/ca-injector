@@ -1,7 +1,7 @@
 APP=ca-injector
 IMAGE=ca-injector
 TAG?=latest
-DOCKER_ROOT?=rembik
+DOCKER_ROOT?=zeiss
 NAMESPACE=cert-manager
 
 FQTAG=$(DOCKER_ROOT)/$(IMAGE):$(TAG)
