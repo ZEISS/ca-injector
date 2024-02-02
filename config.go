@@ -23,11 +23,13 @@ func setupConfig() *viper.Viper {
 	cfg.SetConfigName("ca-injector")
 
 	cfg.AutomaticEnv()
+	cfg.SetEnvPrefix("cainjector") // will be uppercased automatically
 	cfg.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	cfg.SetDefault("tls.key", "/cert/tls.key")
-	cfg.SetDefault("tls.crt", "/cert/tls.crt")
-	cfg.SetDefault("tls.ca.key", "ca.crt")
+	cfg.SetDefault("tls.key", "tls.key")
+	cfg.SetDefault("tls.crt", "tls.crt")
+	cfg.SetDefault("caBundle.configMap", "")
+	cfg.SetDefault("caBundle.crt", "ca.crt")
 	cfg.SetDefault("shutdown.timeout", 10*time.Second)
 
 	if err := cfg.ReadInConfig(); err != nil {

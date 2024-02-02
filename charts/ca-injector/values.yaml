@@ -108,9 +108,10 @@ admissionWebhook:
     #   kind: "ClusterIssuer"
 
   # This enables injection of certifcate authorities in all namespaces,
-  # with the exception of namespaces with "ca-injection:disabled" annotation
+  # except of namespaces and objects which defined the webhook label selector
   # Only one environment should have this enabled.
   enableNamespacesByDefault: false
+  labelSelector: "ca-injector.zeiss.com/inject"
 
 networkPolicy:
   # Enable creation of NetworkPolicy resources.
@@ -175,13 +176,6 @@ podAnnotations: {}
 
 # Assign a PriorityClassName to pods if set
 # priorityClassName: ""
-
-# Define Log Format
-# Use logfmt (default) or json logging
-# logFormat: logfmt
-
-# Decrease log verbosity to errors only
-# logLevel: error
 
 # Resource limits & requests
 resources: {}
@@ -282,9 +276,16 @@ verticalPodAutoscaler:
 
 # CA injector image
 image:
-  registry: docker.io
-  repository: andrewstuart/ca-injector
+  registry: ghcr.io
+  repository: zeiss/ca-injector
   # if not set appVersion field from Chart.yaml is used
   tag: ""
   sha: ""
   pullPolicy: IfNotPresent
+
+# CA bundle used from CA injection service
+caBundle:
+  # if not set the object annotation 'ca-injector.zeiss.com/inject-ca-from' must be defined for injection
+  configMap: ""
+  # key of the config map containing CA bundle
+  crt: ca.crt

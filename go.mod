@@ -1,4 +1,4 @@
-module github.com/microcumulus/ca-injector
+module github.com/zeiss/ca-injector
 
 go 1.18
 

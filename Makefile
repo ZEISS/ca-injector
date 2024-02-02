@@ -1,19 +1,19 @@
 APP=ca-injector
 IMAGE=ca-injector
 TAG?=latest
-DOCKER_ROOT?=zeiss
+CONTAINER_ROOT?=ghcr.io/zeiss
 NAMESPACE=cert-manager
 
-FQTAG=$(DOCKER_ROOT)/$(IMAGE):$(TAG)
+FQTAG=$(CONTAINER_ROOT)/$(IMAGE):$(TAG)
 
 SHA=$(shell docker inspect --format "{{ index .RepoDigests 0 }}" $(1))
 
 install:
-  curl -LsSO https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
-	rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
+	curl -LsSO https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
+	rm -rf "$(HOME)/.local/go" && tar -C "$(HOME)/.local" -xzf go1.21.0.linux-amd64.tar.gz
 	rm go1.21.0.linux-amd64.tar.gz
-	export PATH=$PATH:/usr/local/go/bin
-	go version
+	$$HOME/.local/go/bin/go version
+	export PATH="$$PATH:$$HOME/.local/go/bin"
 
 test:
 	go test ./...
