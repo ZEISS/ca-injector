@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	configMapAnnotation = "ca-injector.zeiss.com/configMap"
-	volumeName          = "ca-injectorzeisscom-ca-bundle"
+	configMapAnnotation = "ca-injector.zeiss.com/inject-ca-from"
+	volumeName          = "ca-injector-zeiss-com-ca"
 )
 
 // Type for less ugly jsonpatch
@@ -59,7 +59,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	f, err := os.OpenFile(cfg.GetString("tls.crt"), os.O_RDONLY, 0400)
+	webhookSslCrt := path.Join("/cert", cfg.GetString("tls.crt"))
+	webhookSslKey := path.Join("/cert", cfg.GetString("tls.key"))
+	f, err := os.OpenFile(webhookSslCrt, os.O_RDONLY, 0400)
 	if err != nil {
 		lg.WithError(err).Fatal("could not read tls cert for serving and to check expiry")
 	}
@@ -75,8 +77,9 @@ func main() {
 		lg.Fatal("cert expired; shutting down")
 	}()
 
-	sslFileName := path.Join("/ssl", cfg.GetString("tls.ca.key"))
-	lg.WithField("file", sslFileName).Info("generated ssl filename")
+	configMap := cfg.GetString("caBundle.configMap")
+	crt := path.Join("/ssl", cfg.GetString("caBundle.crt"))
+	lg.WithField("file", crt).Info("generated ssl filename")
 
 	http.Handle("/metrics", promhttp.Handler())
 
@@ -99,7 +102,11 @@ func main() {
 			"obj.GetObjectKind().GroupVersionKind()": obj.GetObjectKind().GroupVersionKind(),
 		})
 
-		if pod.Annotations[configMapAnnotation] == "" {
+		if pod.Annotations[configMapAnnotation] != "" {
+			configMap = pod.Annotations[configMapAnnotation]
+		}
+
+		if configMap == "" {
 			lg.Info("allowing")
 			return &admv1.AdmissionResponse{
 				Allowed: true,
@@ -122,7 +129,7 @@ func main() {
 			Value: m{
 				"name": volumeName,
 				"configMap": m{
-					"name": pod.Annotations[configMapAnnotation],
+					"name": configMap,
 				},
 			},
 		})
@@ -133,14 +140,14 @@ func main() {
 				Path: fmt.Sprintf("/spec/containers/%d/env/-", i),
 				Value: m{
 					"name":  "SSL_CERT_FILE",
-					"value": sslFileName,
+					"value": crt,
 				},
 			}, {
 				Op:   "add",
 				Path: fmt.Sprintf("/spec/containers/%d/env/-", i),
 				Value: m{
 					"name":  "NODE_EXTRA_CA_CERTS",
-					"value": sslFileName,
+					"value": crt,
 				},
 			}, {
 				Op:   "add",
@@ -176,14 +183,14 @@ func main() {
 				Path: fmt.Sprintf("/spec/initContainers/%d/env/-", i),
 				Value: m{
 					"name":  "SSL_CERT_FILE",
-					"value": sslFileName,
+					"value": crt,
 				},
 			}, {
 				Op:   "add",
 				Path: fmt.Sprintf("/spec/initContainers/%d/env/-", i),
 				Value: m{
 					"name":  "NODE_EXTRA_CA_CERTS",
-					"value": sslFileName,
+					"value": crt,
 				},
 			}, {
 				Op:   "add",
@@ -278,7 +285,9 @@ func main() {
 					}
 				}
 
-				configMap := pod.Annotations[configMapAnnotation]
+				if pod.Annotations[configMapAnnotation] != "" {
+					configMap = pod.Annotations[configMapAnnotation]
+				}
 				if configMap == "" {
 					lg.Debug("did not find annotation " + configMapAnnotation)
 					continue
@@ -335,7 +344,7 @@ func main() {
 
 	lg.Info("listening")
 
-	lg.Fatal(s.ListenAndServeTLS(cfg.GetString("tls.crt"), cfg.GetString("tls.key")))
+	lg.Fatal(s.ListenAndServeTLS(webhookSslCrt, webhookSslKey))
 }
 
 func getFirstExpiringCert(r io.Reader) (*x509.Certificate, error) {

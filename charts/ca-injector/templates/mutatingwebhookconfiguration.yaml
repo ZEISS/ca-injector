@@ -61,13 +61,13 @@ webhooks:
   {{- include "whCore" (mergeOverwrite (deepCopy $whValues) (dict "prefix" "namespace.") ) | nindent 0 }}
   namespaceSelector:
     matchExpressions:
-    - key: ca-injection
+    - key: {{ .Values.admissionWebhook.labelSelector }}
       operator: In
       values:
-      - enabled
+      - "true"
   objectSelector:
     matchExpressions:
-    - key: ca-injector.zeiss.com/inject
+    - key: {{ .Values.admissionWebhook.labelSelector }}
       operator: NotIn
       values:
       - "false"
@@ -76,11 +76,11 @@ webhooks:
   {{- include "whCore" (mergeOverwrite (deepCopy $whValues) (dict "prefix" "object.") ) | nindent 0 }}
   namespaceSelector:
     matchExpressions:
-    - key: ca-injection
+    - key: {{ .Values.admissionWebhook.labelSelector }}
       operator: DoesNotExist
   objectSelector:
     matchExpressions:
-    - key: ca-injector.zeiss.com/inject
+    - key: {{ .Values.admissionWebhook.labelSelector }}
       operator: In
       values:
       - "true"
@@ -90,13 +90,13 @@ webhooks:
   {{- include "whCore" (mergeOverwrite (deepCopy $whValues) (dict "prefix" "auto.") )  | nindent 0 }}
   namespaceSelector:
     matchExpressions:
-    - key: ca-injection
+    - key: {{ .Values.admissionWebhook.labelSelector }}
       operator: DoesNotExist
     - key: "kubernetes.io/metadata.name"
       operator: "NotIn"
       values: ["kube-system","kube-public","kube-node-lease","local-path-storage"]
   objectSelector:
     matchExpressions:
-    - key: ca-injector.zeiss.com/inject
+    - key: {{ .Values.admissionWebhook.labelSelector }}
       operator: DoesNotExist
 {{- end }}

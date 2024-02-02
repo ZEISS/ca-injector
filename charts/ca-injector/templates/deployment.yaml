@@ -48,13 +48,14 @@ spec:
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           {{- end }}
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
-          args:
-            # TODO: Support log format and log level
-            {{- if .Values.logFormat }}
-            - --log-format={{ .Values.logFormat }}
+          env:
+            {{- if .Values.caBundle.configMap }}
+            - name: CAINJECTOR_CABUNDLE_CONFIGMAP
+              value: {{ .Values.caBundle.configMap }}
             {{- end }}
-            {{- if .Values.logLevel }}
-            - --log-level={{ .Values.logLevel }}
+            {{- if .Values.caBundle.crt }}
+            - name: CAINJECTOR_CABUNDLE_CRT
+              value: {{ .Values.caBundle.crt }}
             {{- end }}
           ports:
             - containerPort: {{ .Values.internalPort }}
