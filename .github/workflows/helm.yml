@@ -3,8 +3,8 @@ name: Release Charts
 on:
   push:
     branches:
-      - main
-      - task/add-sec-scan
+      - "main"
+      - "task/add-sec-scan"
 
 jobs:
   release:
@@ -24,8 +24,12 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
+        with:
+          skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

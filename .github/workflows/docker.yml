@@ -1,5 +1,4 @@
-name: release
-
+name: Docker Build
 on:
   schedule:
     - cron: "0 22 * * 0" # every sunday at 10pm
