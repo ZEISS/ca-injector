@@ -1,13 +1,12 @@
-name: release
-
+name: Docker Build
 on:
   schedule:
-    - cron: '0 22 * * 0' # every sunday at 10pm
+    - cron: "0 22 * * 0" # every sunday at 10pm
   push:
     branches:
-      - 'main'
+      - "main"
     tags:
-      - 'v?[0-9]+.[0-9]+.[0-9]+*'
+      - "v?[0-9]+.[0-9]+.[0-9]+*"
   pull_request:
 
 jobs:
@@ -51,7 +50,7 @@ jobs:
       - name: Set up GO
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: "1.21"
       - name: Build GO app
         run: |
           GOOS=linux CGO_ENABLED=0 go build -o app
@@ -95,3 +94,13 @@ jobs:
             org.opencontainers.image.version=${{ steps.env.outputs.version }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.licenses=${{ github.event.repository.license.name }}
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          image-ref: ${{ steps.env.outputs.tags }}
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"

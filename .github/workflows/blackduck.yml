@@ -1,0 +1,30 @@
+name: blackduck
+on:
+  push:
+    branches: [main]
+
+permissions:
+  issues: write
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+      - name: Black Duck Full Scan
+        uses: synopsys-sig/synopsys-action@v1.8.0
+        env:
+          DETECT_PROJECT_NAME: ${{ secrets.BLACKDUCK_PROJECT }}
+        with:
+          blackduck_url: ${{ secrets.BLACKDUCK_URL }}
+          blackduck_token: ${{ secrets.BLACKDUCK_TOKEN }}
+          blackduck_scan_full: true
+          blackduck_scan_failure_severities: "BLOCKER,CRITICAL"
+          blackduck_fixpr_enabled: true
+          blackduck_fixpr_maxCount: 5
+          blackduck_fixpr_filter_severities: "CRITICAL,HIGH"
+          blackduck_fixpr_useUpgradeGuidance: "SHORT_TERM,LONG_TERM"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
