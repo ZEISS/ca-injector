@@ -40,7 +40,7 @@ jobs:
             MINOR=${VERSION_STRIP%.*}
             MAJOR=${MINOR%.*}
             TAGS="$TAGS,${REGISTRY}${IMAGE}:latest"
-
+          fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
