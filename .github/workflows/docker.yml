@@ -39,10 +39,8 @@ jobs:
             VERSION_STRIP=${VERSION#v}
             MINOR=${VERSION_STRIP%.*}
             MAJOR=${MINOR%.*}
-            TAGS="$TAGS,${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR},${REGISTRY}${IMAGE}:latest"
-          # elif [ "${{ github.event_name }}" = "push" ]; then
-          #   TAGS="$TAGS,${REGISTRY}${IMAGE}:sha-${GITHUB_SHA::8}"
-          fi
+            TAGS="$TAGS,${REGISTRY}${IMAGE}:latest"
+
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
