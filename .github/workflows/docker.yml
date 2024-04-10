@@ -6,7 +6,7 @@ on:
     branches:
       - 'main'
     tags:
-      - 'v?[0-9]+.[0-9]+.[0-9]+*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
   pull_request:
 
 jobs:
@@ -35,12 +35,11 @@ jobs:
             VERSION=pr-${{ github.event.number }}
           fi
           TAGS="${REGISTRY}${IMAGE}:${VERSION}"
-          if [[ $VERSION =~ ^v?[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            VERSION_STRIP=${VERSION#v}
-            TAGS="${REGISTRY}${IMAGE}:${VERSION_STRIP}"
-            MINOR=${VERSION_STRIP%.*}
+          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            TAGS="${REGISTRY}${IMAGE}:${VERSION}"
+            MINOR=${VERSION%.*}
             MAJOR=${MINOR%.*}
-            TAGS="$TAGS,${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR},${REGISTRY}${IMAGE}:latest"
+            TAGS="$TAGS,${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
