@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - 'main'
-      - 'task/fix-docker-tags'
 
     types:
       - closed
@@ -59,10 +58,10 @@ jobs:
 
           sed -i "s/appVersion:.*/appVersion: $new_version/g" charts/ca-injector/Chart.yaml
 
-          echo "PR_LABELS=automatic_app_release" >> $GITHUB_ENV
+          echo "PR_LABELS=helm_app_version_update" >> $GITHUB_ENV
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: 'Bump version'
+          title: 'Bump Helm Chart versions'
           labels: ${{ env.PR_LABELS }}

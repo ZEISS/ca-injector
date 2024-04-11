@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - 'main'
-      - 'task/fix-docker-tags'
     types:
       - closed
     paths:
@@ -14,7 +13,7 @@ jobs:
   create_tag:
     if: |
       (github.event.pull_request.merged == true) &&
-      contains(github.event.pull_request.labels.*.name, 'automatic_app_release')
+      contains(github.event.pull_request.labels.*.name, 'helm_app_version_update')
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
@@ -30,6 +29,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ env.new_app_version }}
+          tag_prefix: ''
   trigger_docker_build:
     needs: [create_tag]
     uses: ./.github/workflows/docker.yml
