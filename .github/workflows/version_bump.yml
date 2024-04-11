@@ -34,7 +34,7 @@ jobs:
           if [ $length != 1 ]; then echo "More than one or none label has been defined. Exiting." && exit 1;fi
 
           version_bump_type=$(echo $relevant_labels | jq -r '.[] | .name')
-          version_bump_type=${version_bump#"helm-"}
+          version_bump_type=${version_bump_type#"helm-"}
 
           current_version=$(sed -n -e 's/^.*version: //p' charts/ca-injector/Chart.yaml)
           new_version=$(python -m semver bump -i $version_bump_type $current_version)
@@ -52,7 +52,7 @@ jobs:
           length=$(echo $relevant_labels | jq 'length')
           if [ $length != 1 ]; then echo "More than one or none label has been defined. Exiting." && exit 1;fi
           version_bump_type=$(echo $relevant_labels | jq -r '.[] | .name')
-          version_bump_type=${version_bump#"app-"}
+          version_bump_type=${version_bump_type#"app-"}
 
           current_version=$(sed -n -e 's/^.*appVersion: //p' charts/ca-injector/Chart.yaml)
           new_version=$(python -m semver bump -i $version_bump_type $current_version)
