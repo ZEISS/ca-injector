@@ -92,5 +92,5 @@ Add one or two(app and helm) of the following labels to your PR:
 - helm-minor
 - helm-patch
 
-According to the label, appVersion and/or helm version will be bumped and a PullRequest will be created. After this PR has benn closed, the Helm release workflow will create a new release in case the helm Chart version has changed.
+According to the label, appVersion and/or helm version will be bumped and a PullRequest will be created. The Pull request will include label 'automatic_app_release' to trigger above mentioned workflow. After this PR has benn closed, the Helm release workflow will create a new release in case the helm Chart version has changed.
 
