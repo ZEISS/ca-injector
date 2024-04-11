@@ -13,7 +13,7 @@ jobs:
   create_tag:
     if: |
       (github.event.pull_request.merged == true) &&
-      contains(github.event.pull_request.labels.*.name, 'helm_app_version_update')
+      contains(github.event.pull_request.labels.*.name, 'app-release')
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
