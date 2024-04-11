@@ -14,19 +14,19 @@ permissions:
   pull-requests: write
 
 jobs:
-  bump_helm_version:
-    if: |
-      (github.event.pull_request.merged == true) &&
-      (contains(github.event.pull_request.labels.*.name, 'helm-patch') ||
-      contains(github.event.pull_request.labels.*.name, 'helm-minor') ||
-      contains(github.event.pull_request.labels.*.name, 'helm-major'))
+  bump_version:
     runs-on: ubuntu-latest
     steps:
       - name: Install semver
         run: |
-          sudo apt-get update && sudo apt-get install python3-semver
+          pip install semver
       - uses: actions/checkout@v4
       - name: Bump helm version
+        if: |
+          (github.event.pull_request.merged == true) &&
+          (contains(github.event.pull_request.labels.*.name, 'helm-patch') ||
+          contains(github.event.pull_request.labels.*.name, 'helm-minor') ||
+          contains(github.event.pull_request.labels.*.name, 'helm-major'))
         run: |
           label_names='${{ toJSON(github.event.pull_request.labels) }}'
           relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "helm-patch") or (.name == "helm-minor") or (.name == "helm-major"))]')
@@ -37,22 +37,15 @@ jobs:
           version_bump_type=${version_bump#"helm-"}
 
           current_version=$(sed -n -e 's/^.*version: //p' charts/ca-injector/Chart.yaml)
-          new_version=$(semver bump -i $version_bump_type $current_version)
+          new_version=$(python -m semver bump -i $version_bump_type $current_version)
 
           sed -i "s/version:.*/version: $new_version/g" charts/ca-injector/Chart.yaml
-  bump_app_version:
-    if: |
-      (github.event.pull_request.merged == true) &&
-      (contains(github.event.pull_request.labels.*.name, 'app-patch') ||
-      contains(github.event.pull_request.labels.*.name, 'app-minor') ||
-      contains(github.event.pull_request.labels.*.name, 'app-major'))
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install semver
-        run: |
-          sudo apt-get update && sudo apt-get install python3-semver
-      - uses: actions/checkout@v4
-      - name: Bump helm version
+      - name: Bump App version
+        if: |
+          (github.event.pull_request.merged == true) &&
+          (contains(github.event.pull_request.labels.*.name, 'app-patch') ||
+          contains(github.event.pull_request.labels.*.name, 'app-minor') ||
+          contains(github.event.pull_request.labels.*.name, 'app-major'))
         run: |
           label_names='${{ toJSON(github.event.pull_request.labels) }}'
           relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "app-patch") or (.name == "app-minor") or (.name == "app-major"))]')
@@ -62,13 +55,10 @@ jobs:
           version_bump_type=${version_bump#"app-"}
 
           current_version=$(sed -n -e 's/^.*appVersion: //p' charts/ca-injector/Chart.yaml)
-          new_version=$(semver bump -i $version_bump_type $current_version)
+          new_version=$(python -m semver bump -i $version_bump_type $current_version)
 
           sed -i "s/appVersion:.*/appVersion: $new_version/g" charts/ca-injector/Chart.yaml
 
-  create_pull_request:
-    runs-on: ubuntu-latest
-    steps:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
