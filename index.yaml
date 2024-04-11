@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   ca-injector:
   - apiVersion: v2
+    appVersion: 0.2.0
+    created: "2024-04-11T11:14:03.4497834Z"
+    description: A kubernetes MutatingAdmissionWebhook to inject certificate bundles
+      into pods based on annotations
+    digest: 8e554b2d315d1677e7c075016691a8a76de98cecb977bcf176c7905c70bae7b9
+    name: ca-injector
+    type: application
+    urls:
+    - https://github.com/ZEISS/ca-injector/releases/download/ca-injector-0.2.0/ca-injector-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: v0.1.0
     created: "2024-03-21T15:43:03.141677897Z"
     description: A kubernetes MutatingAdmissionWebhook to inject certificate bundles
@@ -12,4 +23,4 @@ entries:
     urls:
     - https://github.com/ZEISS/ca-injector/releases/download/ca-injector-0.1.0/ca-injector-0.1.0.tgz
     version: 0.1.0
-generated: "2024-03-21T15:43:03.141690781Z"
+generated: "2024-04-11T11:14:03.449791996Z"
