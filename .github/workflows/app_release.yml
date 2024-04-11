@@ -1,0 +1,38 @@
+name: Tag
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'task/fix-docker-tags'
+    types:
+      - closed
+    paths:
+      - 'charts/ca-injector/Chart.yaml'
+
+jobs:
+  create_tag:
+    if: |
+      (github.event.pull_request.merged == true) &&
+      contains(github.event.pull_request.labels.*.name, 'automatic_app_release')
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Receive version
+        run: |
+          new_app_version=$(sed -n -e 's/^.*appVersion: //p' charts/ca-injector/Chart.yaml)
+          echo "new_app_version=${new_app_version}" >> $GITHUB_ENV
+      - name: create git tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ env.new_app_version }}
+  trigger_docker_build:
+    needs: [create_tag]
+    uses: ./.github/workflows/docker.yml
+    secrets: inherit
+    with:
+      tag: ${{ needs.create_tag.outputs.new_tag }}

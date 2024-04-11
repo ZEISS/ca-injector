@@ -72,7 +72,8 @@ or environment variable `CAINJECTOR_CABUNDLE_CRT`).
 ## Release
 
 ### App
-To trigger a new tagged docker build, create a git tag based on the format '[0-9]+.[0-9]+.[0-9]+*'. This will trigger the docker build accordingly.
+To trigger a new tagged docker build, create a PR with label 'automatic_app_release'. The app Version within the helm chart will be used as reference for the container tag. 
+This will be done automatically by below mentioned workflow.
 
 ### Helm
 In case the appVersion is increased, the helm Chart version should also be increased.
