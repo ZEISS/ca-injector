@@ -1,9 +1,12 @@
-name: Bump helm app version
+name: Bump version
 
 on:
-  push:
-    tags:
-      - "v?[0-9]+.[0-9]+.[0-9]+*"
+  pull_request:
+    branches:
+      - 'main'
+
+    types:
+      - closed
 
 permissions:
   contents: write
@@ -13,12 +16,52 @@ jobs:
   bump_version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Bump appVersion
+      - name: Install semver
         run: |
-          sed -i 's/appVersion:.*/appVersion: ${{ github.ref_name }}/g' charts/ca-injector/Chart.yaml
+          pip install semver
+      - uses: actions/checkout@v4
+      - name: Bump helm version
+        if: |
+          (github.event.pull_request.merged == true) &&
+          (contains(github.event.pull_request.labels.*.name, 'helm-patch') ||
+          contains(github.event.pull_request.labels.*.name, 'helm-minor') ||
+          contains(github.event.pull_request.labels.*.name, 'helm-major'))
+        run: |
+          label_names='${{ toJSON(github.event.pull_request.labels) }}'
+          relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "helm-patch") or (.name == "helm-minor") or (.name == "helm-major"))]')
+          length=$(echo $relevant_labels | jq 'length')
+          if [ $length != 1 ]; then echo "More than one or none label has been defined. Exiting." && exit 1;fi
+
+          version_bump_type=$(echo $relevant_labels | jq -r '.[] | .name')
+          version_bump_type=${version_bump_type#"helm-"}
+
+          current_version=$(sed -n -e 's/^.*version: //p' charts/ca-injector/Chart.yaml)
+          new_version=$(python -m semver bump $version_bump_type $current_version)
+
+          sed -i "s/version:.*/version: $new_version/g" charts/ca-injector/Chart.yaml
+      - name: Bump App version
+        if: |
+          (github.event.pull_request.merged == true) &&
+          (contains(github.event.pull_request.labels.*.name, 'app-patch') ||
+          contains(github.event.pull_request.labels.*.name, 'app-minor') ||
+          contains(github.event.pull_request.labels.*.name, 'app-major'))
+        run: |
+          label_names='${{ toJSON(github.event.pull_request.labels) }}'
+          relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "app-patch") or (.name == "app-minor") or (.name == "app-major"))]')
+          length=$(echo $relevant_labels | jq 'length')
+          if [ $length != 1 ]; then echo "More than one or none label has been defined. Exiting." && exit 1;fi
+          version_bump_type=$(echo $relevant_labels | jq -r '.[] | .name')
+          version_bump_type=${version_bump_type#"app-"}
+
+          current_version=$(sed -n -e 's/^.*appVersion: //p' charts/ca-injector/Chart.yaml)
+          new_version=$(python -m semver bump $version_bump_type $current_version)
+
+          sed -i "s/appVersion:.*/appVersion: $new_version/g" charts/ca-injector/Chart.yaml
+
+          echo "PR_LABELS=helm_app_version_update" >> $GITHUB_ENV
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "Add app version ${{ github.ref_name }}"
-          base: main
+          title: 'Bump Helm Chart versions'
+          labels: ${{ env.PR_LABELS }}

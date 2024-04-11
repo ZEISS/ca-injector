@@ -67,3 +67,30 @@ in your helm chart's appropriate annotations section.
 `ca.crt` can be changed by configuration `caBundle.crt` in any of the typical
 ways (config files at `/etc/ca-injector.yaml`, `$HOME/.config/ca-injector.yaml`,
 or environment variable `CAINJECTOR_CABUNDLE_CRT`).
+
+
+## Release
+
+### App
+To trigger a new tagged docker build, create a PR with label 'helm_app_version_update'. The app Version within the helm chart will be used as reference for the container tag. 
+This will be done automatically by below mentioned workflow.
+
+### Helm
+In case the appVersion is increased, the helm Chart version should also be increased.
+In case the helm Chart version is increased, the appVersion does not have to be increased as well.
+
+
+Option 1: 
+Manually set version and/or appVersion within Helm Chart. The Helm release workflow will create a new release in case the helm Chart version has changed.
+
+Option 2:
+Add one or two(app and helm) of the following labels to your PR:
+- app-major
+- app-minor
+- app-patch
+- helm-major
+- helm-minor
+- helm-patch
+
+According to the label, appVersion and/or helm version will be bumped and a PullRequest will be created. The Pull request will include label 'helm_app_version_update' to trigger above mentioned workflow. After this PR has benn closed, the Helm release workflow will create a new release in case the helm Chart version has changed.
+
