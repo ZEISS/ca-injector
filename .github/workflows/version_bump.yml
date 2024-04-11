@@ -58,7 +58,7 @@ jobs:
 
           sed -i "s/appVersion:.*/appVersion: $new_version/g" charts/ca-injector/Chart.yaml
 
-          echo "PR_LABELS=helm_app_version_update" >> $GITHUB_ENV
+          echo "PR_LABELS=app_release" >> $GITHUB_ENV
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

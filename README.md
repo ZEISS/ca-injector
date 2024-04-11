@@ -72,7 +72,7 @@ or environment variable `CAINJECTOR_CABUNDLE_CRT`).
 ## Release
 
 ### App
-To trigger a new tagged docker build, create a PR with label 'helm_app_version_update'. The app Version within the helm chart will be used as reference for the container tag. 
+To trigger a new tagged docker build, create a PR with label 'app_release'. The app Version within the helm chart will be used as reference for the container tag. 
 This will be done automatically by below mentioned workflow.
 
 ### Helm
@@ -92,5 +92,5 @@ Add one or two(app and helm) of the following labels to your PR:
 - helm-minor
 - helm-patch
 
-According to the label, appVersion and/or helm version will be bumped and a PullRequest will be created. The Pull request will include label 'helm_app_version_update' to trigger above mentioned workflow. After this PR has benn closed, the Helm release workflow will create a new release in case the helm Chart version has changed.
+According to the label, appVersion and/or helm version will be bumped and a PullRequest will be created. The Pull request will include label 'app_release' to trigger above mentioned workflow. After this PR has benn closed, the Helm release workflow will create a new release in case the helm Chart version has changed.
 
