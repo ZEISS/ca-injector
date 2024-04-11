@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - 'main'
+      - 'task/fix-docker-tags'
+      - 'Test'
+
     types:
       - closed
 
