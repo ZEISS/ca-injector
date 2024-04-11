@@ -37,7 +37,7 @@ jobs:
           version_bump_type=${version_bump_type#"helm-"}
 
           current_version=$(sed -n -e 's/^.*version: //p' charts/ca-injector/Chart.yaml)
-          new_version=$(python -m semver bump -i $version_bump_type $current_version)
+          new_version=$(python -m semver bump $version_bump_type $current_version)
 
           sed -i "s/version:.*/version: $new_version/g" charts/ca-injector/Chart.yaml
       - name: Bump App version
@@ -55,11 +55,14 @@ jobs:
           version_bump_type=${version_bump_type#"app-"}
 
           current_version=$(sed -n -e 's/^.*appVersion: //p' charts/ca-injector/Chart.yaml)
-          new_version=$(python -m semver bump -i $version_bump_type $current_version)
+          new_version=$(python -m semver bump $version_bump_type $current_version)
 
           sed -i "s/appVersion:.*/appVersion: $new_version/g" charts/ca-injector/Chart.yaml
+
+          echo "PR_LABELS=automatic_app_release" >> $GITHUB_ENV
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           title: 'Bump version'
+          labels: ${{ env.PR_LABELS }}
