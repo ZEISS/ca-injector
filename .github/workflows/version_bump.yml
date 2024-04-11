@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Install semver
         run: |
-          pip3 install semver
+          sudo apt-get update && sudo apt-get install python3-semver
       - uses: actions/checkout@v4
       - name: Bump helm version
         run: |
@@ -45,12 +45,12 @@ jobs:
       (github.event.pull_request.merged == true) &&
       (contains(github.event.pull_request.labels.*.name, 'app-patch') ||
       contains(github.event.pull_request.labels.*.name, 'app-minor') ||
-      contains(github.event.pull_request.labels.*.name, 'app-minor'))
+      contains(github.event.pull_request.labels.*.name, 'app-major'))
     runs-on: ubuntu-latest
     steps:
       - name: Install semver
         run: |
-          pip3 install semver
+          sudo apt-get update && sudo apt-get install python3-semver
       - uses: actions/checkout@v4
       - name: Bump helm version
         run: |
