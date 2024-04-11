@@ -27,7 +27,7 @@ jobs:
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=edge
-          elif [[ "${{ github.event.workflow }}" = ".github/workflows/app_release.yml" ]]; then
+          elif [[ -n "${{ inputs.tag }}" ]]; then
             VERSION=${{ inputs.tag }}
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
