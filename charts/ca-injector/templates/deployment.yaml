@@ -49,6 +49,10 @@ spec:
           {{- end }}
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
           env:
+            {{- if .Values.caBundle.annotation }}
+            - name: CAINJECTOR_CABUNDLE_ANNOTATION
+              value: {{ .Values.caBundle.annotation }}
+            {{- end }}
             {{- if .Values.caBundle.configMap }}
             - name: CAINJECTOR_CABUNDLE_CONFIGMAP
               value: {{ .Values.caBundle.configMap }}
@@ -56,6 +60,12 @@ spec:
             {{- if .Values.caBundle.crt }}
             - name: CAINJECTOR_CABUNDLE_CRT
               value: {{ .Values.caBundle.crt }}
+            {{- end }}
+            {{- if .Values.admissionWebhook.enableNamespacesByDefault }}
+            - name: CAINJECTOR_ADMISSIONWEBHOOK_ENABLENAMESPACESBYDEFAULT
+              value: {{ .Values.admissionWebhook.enableNamespacesByDefault }}
+            - name: CAINJECTOR_ADMISSIONWEBHOOK_IGNORENAMESPACES
+              value: {{ .Values.admissionWebhook.ignoreAdditionalNamespaces }}
             {{- end }}
           ports:
             - containerPort: {{ .Values.internalPort }}

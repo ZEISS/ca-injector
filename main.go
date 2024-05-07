@@ -259,6 +259,13 @@ func main() {
 
 			lg.WithField("len(pods.Items)", len(pods.Items)).Info("got pod list")
 
+			namespaces, err := cs.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+			if err != nil {
+				logrus.WithError(err).Fatal("error listing namespaces")
+			}
+
+			lg.WithField("len(namespaces.Items)", len(namespaces.Items)).Info("got namespaces list")
+
 		items:
 			for _, pod := range pods.Items {
 				lg := lg.WithFields(logrus.Fields{
@@ -292,6 +299,13 @@ func main() {
 					lg.Debug("did not find annotation " + configMapAnnotation)
 					continue
 				}
+
+				for _, namespace := range namespaces.Items {
+					// TODO
+				}
+
+				fmt.Printf("%v", namespace.Labels)
+				fmt.Printf("%v", pod.Labels)
 
 				// Look for well-known volume in list of mounts
 				for _, vol := range pod.Spec.Volumes {
