@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"slices"
 	"syscall"
 	"time"
 
@@ -28,7 +29,6 @@ import (
 )
 
 const (
-	configMapAnnotation = "ca-injector.zeiss.com/inject-ca-from"
 	volumeName          = "ca-injector-zeiss-com-ca"
 )
 
@@ -77,6 +77,7 @@ func main() {
 		lg.Fatal("cert expired; shutting down")
 	}()
 
+	configMapAnnotation := cfg.GetString("caBundle.annotation")
 	configMap := cfg.GetString("caBundle.configMap")
 	crt := path.Join("/ssl", cfg.GetString("caBundle.crt"))
 	lg.WithField("file", crt).Info("generated ssl filename")
@@ -259,6 +260,13 @@ func main() {
 
 			lg.WithField("len(pods.Items)", len(pods.Items)).Info("got pod list")
 
+			namespaces, err := cs.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+			if err != nil {
+				logrus.WithError(err).Fatal("error listing namespaces")
+			}
+
+			lg.WithField("len(namespaces.Items)", len(namespaces.Items)).Info("got namespaces list")
+
 		items:
 			for _, pod := range pods.Items {
 				lg := lg.WithFields(logrus.Fields{
@@ -290,6 +298,26 @@ func main() {
 				}
 				if configMap == "" {
 					lg.Debug("did not find annotation " + configMapAnnotation)
+					continue
+				}
+
+	      webhookLabelSelector := cfg.GetString("admissionWebhook.labelSelector")
+				webhookEnableNamespacesByDefault := cfg.GetBool("admissionWebhook.enableNamespacesByDefault")
+				webhookIgnoreNamespaces := cfg.GetStringSlice("admissionWebhook.ignoreNamespaces")
+				webhookEnabled := false
+				for _, namespace := range namespaces.Items {
+					if namespace.Name == pod.Namespace {
+						if webhookEnableNamespacesByDefault && !slices.Contains(webhookIgnoreNamespaces, namespace.Name) && pod.Labels[webhookLabelSelector] == "" {
+							webhookEnabled = true
+						} else if namespace.Labels[webhookLabelSelector] == "" && pod.Labels[webhookLabelSelector] == "true" {
+							webhookEnabled = true
+						} else if namespace.Labels[webhookLabelSelector] == "true" && pod.Labels[webhookLabelSelector] == "" {
+							webhookEnabled = true
+						}
+					}
+				}
+				if !webhookEnabled {
+					lg.Debug("webhook is not enabled")
 					continue
 				}
 

@@ -107,10 +107,15 @@ admissionWebhook:
     #   name: "issuer"
     #   kind: "ClusterIssuer"
 
-  # This enables injection of certifcate authorities in all namespaces,
+  # This enables injection of certifcate authority bundles in all namespaces,
   # except of namespaces and objects which defined the webhook label selector
   # Only one environment should have this enabled.
   enableNamespacesByDefault: false
+  # Only used in conjunction with  admissionWebhook.enableNamespacesByDefault == True.
+  # Ignores namespaces besides "kube-system", "kube-public", "kube-node-lease"
+  # and "local-path-storage".
+  ignoreAdditionalNamespaces: []
+
   labelSelector: "ca-injector.zeiss.com/inject"
 
 networkPolicy:
@@ -285,7 +290,8 @@ image:
 
 # CA bundle used from CA injection service
 caBundle:
-  # if not set the object annotation 'ca-injector.zeiss.com/inject-ca-from' must be defined for injection
+  annotation: "ca-injector.zeiss.com/inject-ca-from"
+  # if not set the object annotation {{ .Values.caBundle.annotation }} must be defined for injection
   configMap: ""
   # key of the config map containing CA bundle
   crt: ca.crt

@@ -22,6 +22,7 @@
   "failurePolicy" (include "whFailurePolicy" .)
   "timeoutSeconds" .Values.admissionWebhook.timeoutSeconds
   "caBundle" (include "whCaBundle" .) -}}
+{{- $admissionWebhookIgnoreDefaultNamespaces := (list "kube-system" "kube-public" "kube-node-lease" "local-path-storage") }}
 {{- define "whCore" -}}
 - name: {{ .prefix }}ca-injector.zeiss.com
   failurePolicy: {{ .failurePolicy }}
@@ -94,7 +95,10 @@ webhooks:
       operator: DoesNotExist
     - key: "kubernetes.io/metadata.name"
       operator: "NotIn"
-      values: ["kube-system","kube-public","kube-node-lease","local-path-storage"]
+      values:
+        {{- range ((concat $admissionWebhookIgnoreDefaultNamespaces .Values.admissionWebhook.ignoreAdditionalNamespaces) | uniq) }}
+        - {{ . }}
+        {{- end }}
   objectSelector:
     matchExpressions:
     - key: {{ .Values.admissionWebhook.labelSelector }}
