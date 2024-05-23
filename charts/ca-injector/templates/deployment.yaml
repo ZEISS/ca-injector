@@ -5,6 +5,7 @@ metadata:
   namespace: {{ include "ca-injector.namespace" . }}
   labels:
     app.kubernetes.io/name: {{ include "ca-injector.name" . }}
+    {{ .Values.admissionWebhook.labelSelector }}: "false"
     {{- include "ca-injector.labels" . | indent 4 }}
     {{- if .Values.labels }}
     {{- toYaml .Values.labels | nindent 4 }}
@@ -48,25 +49,6 @@ spec:
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           {{- end }}
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
-          env:
-            {{- if .Values.caBundle.annotation }}
-            - name: CAINJECTOR_CABUNDLE_ANNOTATION
-              value: {{ .Values.caBundle.annotation }}
-            {{- end }}
-            {{- if .Values.caBundle.configMap }}
-            - name: CAINJECTOR_CABUNDLE_CONFIGMAP
-              value: {{ .Values.caBundle.configMap }}
-            {{- end }}
-            {{- if .Values.caBundle.crt }}
-            - name: CAINJECTOR_CABUNDLE_CRT
-              value: {{ .Values.caBundle.crt }}
-            {{- end }}
-            {{- if .Values.admissionWebhook.enableNamespacesByDefault }}
-            - name: CAINJECTOR_ADMISSIONWEBHOOK_ENABLENAMESPACESBYDEFAULT
-              value: {{ .Values.admissionWebhook.enableNamespacesByDefault }}
-            - name: CAINJECTOR_ADMISSIONWEBHOOK_IGNORENAMESPACES
-              value: {{ .Values.admissionWebhook.ignoreAdditionalNamespaces }}
-            {{- end }}
           ports:
             - containerPort: {{ .Values.internalPort }}
               name: https
@@ -78,11 +60,19 @@ spec:
             - name: tls-secret
               mountPath: /cert
               readOnly: true
+            - name: ca-injector-config
+              mountPath: /etc/ca-injector
       volumes:
         - name: tls-secret
           secret:
             defaultMode: 420
             secretName: {{ include "ca-injector.fullname" . }}-admission
+        - name: ca-injector-config
+          configMap: 
+            name: {{ include "ca-injector.fullname" . }}-config
+            items:
+              - key: config.yaml
+                path: config.yaml
       {{- with .Values.dnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}

@@ -1,0 +1,28 @@
+{{- define "deploymentConfig" -}}
+caBundle.annotation: {{ .Values.admissionWebhook.labelSelector }}
+{{- if .Values.caBundle.configMap }}
+caBundle.configMap: {{ .Values.caBundle.configMap }}
+{{- end }}
+{{- if .Values.caBundle.crt }}
+caBundle.crt: {{ .Values.caBundle.crt }}
+{{- end }}
+{{- if .Values.admissionWebhook.labelSelector }}
+admissionWebhook.labelSelector: {{ .Values.admissionWebhook.labelSelector }}
+{{- end }}
+{{- if .Values.admissionWebhook.enableNamespacesByDefault }}
+admissionWebhook.enableNamespacesByDefault: true
+{{- $admissionWebhookIgnoreDefaultNamespaces := (list "kube-system" "kube-public" "kube-node-lease" "local-path-storage") }}
+admissionWebhook.ignoreNamespaces: '{{ join " " ((concat $admissionWebhookIgnoreDefaultNamespaces .Values.admissionWebhook.ignoreAdditionalNamespaces) | uniq) }}'
+{{- end }}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ca-injector.fullname" . }}-config
+  namespace: {{ include "ca-injector.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "ca-injector.name" . }}
+    {{- include "ca-injector.labels" . | indent 4 }}
+data:
+  config.yaml: |
+{{ include "deploymentConfig" . | indent 4 }}

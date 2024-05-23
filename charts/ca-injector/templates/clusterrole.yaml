@@ -9,6 +9,13 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - namespaces
+  verbs:
+  - read
+  - list
+- apiGroups:
+  - ""
+  resources:
   - pods
   verbs:
   - read

@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"slices"
 	"syscall"
 	"time"
 
@@ -28,7 +29,6 @@ import (
 )
 
 const (
-	configMapAnnotation = "ca-injector.zeiss.com/inject-ca-from"
 	volumeName          = "ca-injector-zeiss-com-ca"
 )
 
@@ -77,6 +77,7 @@ func main() {
 		lg.Fatal("cert expired; shutting down")
 	}()
 
+	configMapAnnotation := cfg.GetString("caBundle.annotation")
 	configMap := cfg.GetString("caBundle.configMap")
 	crt := path.Join("/ssl", cfg.GetString("caBundle.crt"))
 	lg.WithField("file", crt).Info("generated ssl filename")
@@ -300,12 +301,25 @@ func main() {
 					continue
 				}
 
+	      webhookLabelSelector := cfg.GetString("admissionWebhook.labelSelector")
+				webhookEnableNamespacesByDefault := cfg.GetBool("admissionWebhook.enableNamespacesByDefault")
+				webhookIgnoreNamespaces := cfg.GetStringSlice("admissionWebhook.ignoreNamespaces")
+				webhookEnabled := false
 				for _, namespace := range namespaces.Items {
-					// TODO
+					if namespace.Name == pod.Namespace {
+						if webhookEnableNamespacesByDefault && !slices.Contains(webhookIgnoreNamespaces, namespace.Name) && pod.Labels[webhookLabelSelector] == "" {
+							webhookEnabled = true
+						} else if namespace.Labels[webhookLabelSelector] == "" && pod.Labels[webhookLabelSelector] == "true" {
+							webhookEnabled = true
+						} else if namespace.Labels[webhookLabelSelector] == "true" && pod.Labels[webhookLabelSelector] == "" {
+							webhookEnabled = true
+						}
+					}
 				}
-
-				fmt.Printf("%v", namespace.Labels)
-				fmt.Printf("%v", pod.Labels)
+				if !webhookEnabled {
+					lg.Debug("webhook is not enabled")
+					continue
+				}
 
 				// Look for well-known volume in list of mounts
 				for _, vol := range pod.Spec.Volumes {

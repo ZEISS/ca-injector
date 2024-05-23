@@ -111,6 +111,9 @@ admissionWebhook:
   # except of namespaces and objects which defined the webhook label selector
   # Only one environment should have this enabled.
   enableNamespacesByDefault: false
+  # Only used in conjunction with  admissionWebhook.enableNamespacesByDefault == True.
+  # Ignores namespaces besides "kube-system", "kube-public", "kube-node-lease"
+  # and "local-path-storage".
   ignoreAdditionalNamespaces: []
 
   labelSelector: "ca-injector.zeiss.com/inject"
